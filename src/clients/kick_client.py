@@ -80,7 +80,6 @@ class KickClient(AbstractClient):
 
         try:
             data = json.loads(frame["data"])
-            user_id = data["sender"]["id"]
             username = data["sender"]["username"]
             content = data["content"]
         except (KeyError, json.JSONDecodeError) as e:
@@ -90,6 +89,6 @@ class KickClient(AbstractClient):
             return
 
         try:
-            await self.on_message(user_id=user_id, username=username, content=content)
+            await self.on_message(username=username, content=content)
         except Exception:
             logger.exception("Błąd podczas przetwarzania wiadomości od %s", username)
