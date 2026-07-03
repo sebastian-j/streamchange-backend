@@ -41,7 +41,7 @@ class TwitchClient(AbstractClient):
                 self.writer.close()
                 await self.writer.wait_closed()
             except Exception:
-                pass
+                print("Błąd podczas zamykania połączenia.")
 
         self.reader = None
         self.writer = None
