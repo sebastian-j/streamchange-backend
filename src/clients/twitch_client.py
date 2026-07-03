@@ -23,7 +23,9 @@ class TwitchClient(AbstractClient):
         self.writer.write("PASS anonymous\r\n".encode("utf-8"))
         self.writer.write(f"NICK {TWITCH_NICK}\r\n".encode("utf-8"))
         self.writer.write(
-            "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership\r\n".encode("utf-8")
+            "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership\r\n".encode(
+                "utf-8"
+            )
         )
         self.writer.write(f"JOIN #{self.current_channel}\r\n".encode("utf-8"))
         await self.writer.drain()
@@ -93,7 +95,7 @@ class TwitchClient(AbstractClient):
                         is_vip=tags.get("vip") == "1",
                         is_moderator=tags.get("mod") == "1",
                         subscriber=sub_months,
-                        is_streamer=is_streamer
+                        is_streamer=is_streamer,
                     )
 
                     await self.on_message(chat_msg)
