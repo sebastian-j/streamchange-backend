@@ -5,9 +5,11 @@ from src.resolvers.kick_resolver import get_chatroom_id
 
 app = FastAPI()
 
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
 
 @app.websocket("/ws/chat")
 async def chat_endpoint(websocket: WebSocket):
@@ -36,8 +38,6 @@ async def chat_endpoint(websocket: WebSocket):
         elif platform == "kick":
             client = KickClient(on_message=send)
             await client.connect(get_chatroom_id(channel))
-            
-        
 
         while True:
             await websocket.receive_text()

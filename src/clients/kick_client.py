@@ -89,6 +89,6 @@ class KickClient(AbstractClient):
             return
 
         try:
-            await self.on_message(username=username, content=content)
+            await self.on_message(username, content)
         except Exception:
             logger.exception("Błąd podczas przetwarzania wiadomości od %s", username)
