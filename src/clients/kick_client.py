@@ -22,6 +22,9 @@ class KickClient(AbstractClient):
 
     async def connect(self, channel: int) -> None:
         self.running = True
+        self._spawn(self._run(channel))
+
+    async def _run(self, channel: int) -> None:
         delay = 1
 
         while self.running:
@@ -67,6 +70,7 @@ class KickClient(AbstractClient):
         self.running = False
         if self.ws:
             await self.ws.close()
+        await self._cancel_task()
 
     async def _handle_frame(self, raw: str) -> None:
         try:

@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from src.clients.twitch_client import TwitchClient
 from src.clients.kick_client import KickClient
@@ -37,7 +39,8 @@ async def chat_endpoint(websocket: WebSocket):
             await client.connect(channel)
         elif platform == "kick":
             client = KickClient(on_message=send)
-            await client.connect(get_chatroom_id(channel))
+            chatroom_id = await asyncio.to_thread(get_chatroom_id, channel)
+            await client.connect(chatroom_id)
 
         while True:
             await websocket.receive_text()

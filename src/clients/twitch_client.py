@@ -2,44 +2,37 @@ from typing import Callable
 from src.clients.abstract_client import AbstractClient
 import asyncio
 
+from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
+
 
 class TwitchClient(AbstractClient):
-    TWITCH_IRC_HOST = "irc.chat.twitch.tv"
-    TWITCH_IRC_PORT = 6667
-    NICK = "justinfan12345"
-
     def __init__(self, on_message: Callable) -> None:
         self.reader = None
         self.writer = None
-        self._read_task = None
         super().__init__(on_message)
 
     async def connect(self, channel: str) -> None:
         self.reader, self.writer = await asyncio.open_connection(
-            self.TWITCH_IRC_HOST, self.TWITCH_IRC_PORT
+            TWITCH_IRC_HOST, TWITCH_IRC_PORT
         )
 
         self.writer.write("PASS anonymous\r\n".encode("utf-8"))
-        self.writer.write(f"NICK {self.NICK}\r\n".encode("utf-8"))
+        self.writer.write(f"NICK {TWITCH_NICK}\r\n".encode("utf-8"))
         self.writer.write(f"JOIN #{channel}\r\n".encode("utf-8"))
         await self.writer.drain()
-        self._read_task = asyncio.create_task(self._listen_loop())
+        self._spawn(self._listen_loop())
 
     async def disconnect(self) -> None:
-        if self._read_task:
-            self._read_task.cancel()
-            try:
-                await self._read_task
-            except asyncio.CancelledError:
-                pass
+        await self._cancel_task()
+        await self._close_connection()
 
+    async def _close_connection(self) -> None:
         if self.writer:
             self.writer.close()
             await self.writer.wait_closed()
 
         self.reader = None
         self.writer = None
-        self._read_task = None
 
     async def _listen_loop(self) -> None:
         try:
@@ -62,10 +55,9 @@ class TwitchClient(AbstractClient):
 
                     if len(message_part) > 1:
                         content = message_part[1]
-
-                    await self.on_message(author, content)
+                        await self.on_message(author, content)
 
         except asyncio.CancelledError:
             print("Pętla zatrzymana.")
         finally:
-            await self.disconnect()
+            await self._close_connection()
