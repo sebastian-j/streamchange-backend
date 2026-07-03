@@ -7,7 +7,6 @@ on:
     branches: [ main ]
 
 jobs:
-  # -------------------- ETAP 1: JAKOŚĆ KODU I TESTY (CI) --------------------
   quality-and-tests:
     runs-on: ubuntu-latest
     steps:
@@ -17,18 +16,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Dopasuj do swojej wersji Pythona
-          cache: 'pip'           # MAGIA: Automatyczny cache dla pobranych paczek (przyspiesza pipeline!)
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install ruff pytest  # Dodatkowe narzędzia do testów i lintera
+          pip install ruff pytest
 
       - name: Lint and Format with Ruff
         run: |
-          # Ruff to obecnie najszybszy linter/formatter w świecie Pythona (pisany w Rust)
           ruff check .
           ruff format --check .
 
