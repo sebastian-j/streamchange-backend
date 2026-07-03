@@ -1,3 +1,4 @@
+from typing import Callable
 from src.clients.abstract_client import AbstractClient
 import asyncio
 
@@ -7,11 +8,11 @@ class TwitchClient(AbstractClient):
     TWITCH_IRC_PORT = 6667
     NICK = "justinfan12345"
 
-    def __init__(self, on_message):
+    def __init__(self, on_message: Callable) -> None:
         self.reader = None
         self.writer = None
         self._read_task = None
-        self.on_message = on_message
+        super().__init__(on_message)
 
     async def connect(self, channel: str) -> None:
         self.reader, self.writer = await asyncio.open_connection(

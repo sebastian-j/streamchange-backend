@@ -1,5 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from src.clients.twitch_client import TwitchClient
+from src.clients.kick_client import KickClient
+from src.resolvers.kick_resolver import get_chatroom_id
 
 app = FastAPI()
 
@@ -30,10 +32,12 @@ async def chat_endpoint(websocket: WebSocket):
 
         if platform == "twitch":
             client = TwitchClient(on_message=send)
+            await client.connect(channel)
         elif platform == "kick":
-            # Tutaj dodać kick
-            pass
-        await client.connect(channel)
+            client = KickClient(on_message=send)
+            await client.connect(get_chatroom_id(channel))
+            
+        
 
         while True:
             await websocket.receive_text()
