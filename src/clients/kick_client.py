@@ -8,6 +8,7 @@ from websockets.exceptions import ConnectionClosed
 
 from src.clients.abstract_client import AbstractClient
 from src.config import KICK_PUSHER_WS
+from src.schemas.chat import ChatMessage
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,8 @@ class KickClient(AbstractClient):
 
         try:
             data = json.loads(frame["data"])
-            username = data["sender"]["username"]
+            sender = data["sender"]
+            username = sender["username"]
             content = data["content"]
         except (KeyError, json.JSONDecodeError) as e:
             logger.warning(
@@ -92,7 +94,27 @@ class KickClient(AbstractClient):
             )
             return
 
+        identity = sender.get("identity") or {}
+        badges = identity.get("badges") or []
+        badge_types = {badge.get("type") for badge in badges}
+
+        subscriber = 0
+        for badge in badges:
+            if badge.get("type") == "subscriber":
+                subscriber = badge.get("count", 0)
+                break
+
+        chat_msg = ChatMessage(
+            author=username,
+            message=content,
+            color=identity.get("color") or "#A9A9A9",
+            is_vip="vip" in badge_types,
+            is_moderator="moderator" in badge_types,
+            subscriber=subscriber,
+            is_streamer="broadcaster" in badge_types,
+        )
+
         try:
-            await self.on_message(username, content)
+            await self.on_message(chat_msg)
         except Exception:
             logger.exception("Błąd podczas przetwarzania wiadomości od %s", username)
