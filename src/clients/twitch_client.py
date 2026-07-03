@@ -65,6 +65,6 @@ class TwitchClient(AbstractClient):
                     await self.on_message(author, content)
 
         except asyncio.CancelledError:
-            print("Listen loop cancelled.")
+            print("Pętla zatrzymana.")
         finally:
             await self.disconnect()

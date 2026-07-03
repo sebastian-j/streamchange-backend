@@ -3,6 +3,9 @@ from src.clients.twitch_client import TwitchClient
 
 app = FastAPI()
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 @app.websocket("/ws/chat")
 async def chat_endpoint(websocket: WebSocket):
@@ -16,17 +19,17 @@ async def chat_endpoint(websocket: WebSocket):
         platform = config.get("platform")
 
         if not channel:
-            await websocket.close(code=4000, reason="Wrong channel name.")
+            await websocket.close(code=4000, reason="Zła nazwa kanału.")
             return
         elif platform != "twitch" and platform != "kick":
-            await websocket.close(code=4001, reason="Unsupported platform.")
+            await websocket.close(code=4001, reason="Nieobsługiwana platforma.")
             return
 
-        async def log_to_console(author: str, content: str):
-            print(f"{author}: {content}")
+        async def send(author: str, content: str):
+            await websocket.send_json({"author": author, "message": content})
 
         if platform == "twitch":
-            client = TwitchClient(on_message=log_to_console)
+            client = TwitchClient(on_message=send)
         elif platform == "kick":
             # Tutaj dodać kick
             pass
@@ -36,14 +39,14 @@ async def chat_endpoint(websocket: WebSocket):
             await websocket.receive_text()
 
     except WebSocketDisconnect:
-        print("Client disconnected.")
+        print("Klient rozłączony.")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"Błąd: {e}")
     finally:
         if client:
-            print("Disconnecting client...")
+            print("Rozłączam klienta...")
             await client.disconnect()
-        print("WebSocket connection closed.")
+        print("Połączenie zamknięte.")
 
 
 if __name__ == "__main__":
