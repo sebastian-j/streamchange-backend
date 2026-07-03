@@ -4,6 +4,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from src.clients.twitch_client import TwitchClient
 from src.clients.kick_client import KickClient
 from src.resolvers.kick_resolver import get_chatroom_id
+from src.schemas.chat import ChatMessage
 
 app = FastAPI()
 
@@ -31,8 +32,8 @@ async def chat_endpoint(websocket: WebSocket):
             await websocket.close(code=4001, reason="Nieobsługiwana platforma.")
             return
 
-        async def send(author: str, content: str):
-            await websocket.send_json({"author": author, "message": content})
+        async def send(chat_msg: ChatMessage):
+            await websocket.send_json(chat_msg.model_dump())
 
         if platform == "twitch":
             client = TwitchClient(on_message=send)

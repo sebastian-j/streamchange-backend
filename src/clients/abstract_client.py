@@ -1,10 +1,11 @@
 import asyncio
 from abc import ABC, abstractmethod
 from typing import Callable
+from src.schemas.chat import ChatMessage
 
 
 class AbstractClient(ABC):
-    def __init__(self, on_message: Callable) -> None:
+    def __init__(self, on_message: Callable[[ChatMessage], None]) -> None:
         self.on_message = on_message
         self._task: asyncio.Task | None = None
 
