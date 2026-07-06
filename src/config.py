@@ -5,3 +5,5 @@ KICK_PUSHER_WS = (
 TWITCH_IRC_HOST = "irc.chat.twitch.tv"
 TWITCH_IRC_PORT = 6667
 TWITCH_NICK = "justinfan12345"
+TWITCH_CLIENT_ID = "wfe821ccwpi9b3omk232kwktapw5in"
+TWITCH_CLIENT_SECRET = "gzt45l42tvcjaeon3nx7i31eguumo7"
