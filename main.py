@@ -15,23 +15,24 @@ twitch_api = TwitchAPIService()
 async def health():
     return {"status": "ok"}
 
+
 @app.get("/api/stream-info", response_model=StreamData)
 async def get_stream_info(
     channel: str = Query(..., description="Nazwa kanału"),
-    platform: str = Query(..., description="Platforma")
+    platform: str = Query(..., description="Platforma"),
 ):
     if not channel:
         raise HTTPException(status_code=400, detail="Zła nazwa kanału.")
-        
+
     platform = platform.lower().strip()
-    
+
     if platform == "twitch":
         try:
             return await twitch_api.get_stream_info(channel)
         except Exception as e:
             raise HTTPException(
-                status_code=500, 
-                detail=f"Nie udało się pobrać danych z API Twitcha: {e}"
+                status_code=500,
+                detail=f"Nie udało się pobrać danych z API Twitcha: {e}",
             )
     elif platform == "kick":
         return StreamData(is_live=False)
