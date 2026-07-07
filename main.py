@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from src.clients.twitch_client import TwitchClient
@@ -7,8 +8,16 @@ from src.resolvers.kick_resolver import get_chatroom_id
 from src.schemas.chat import ChatMessage, StreamData
 from src.clients.twitch_api import TwitchAPIService
 
-app = FastAPI()
 twitch_api = TwitchAPIService()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await twitch_api.aclose()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/health")

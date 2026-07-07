@@ -12,3 +12,6 @@ TWITCH_IRC_PORT = 6667
 TWITCH_NICK = "justinfan12345"
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
+
+TOKEN_URL = "https://id.twitch.tv/oauth2/token"
+STREAMS_URL = "https://api.twitch.tv/helix/streams"
