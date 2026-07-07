@@ -7,14 +7,17 @@ from src.clients.kick_client import KickClient
 from src.resolvers.kick_resolver import get_chatroom_id
 from src.schemas.chat import ChatMessage, StreamData
 from src.clients.twitch_api import TwitchAPIService
+from src.clients.kick_api import KickAPIService
 
 twitch_api = TwitchAPIService()
+kick_api = KickAPIService()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
     await twitch_api.aclose()
+    await kick_api.aclose()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -44,7 +47,13 @@ async def get_stream_info(
                 detail=f"Nie udało się pobrać danych z API Twitcha: {e}",
             )
     elif platform == "kick":
-        return StreamData(is_live=False)
+        try:
+            return await kick_api.get_stream_info(channel)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Nie udało się pobrać danych z API Kicka: {e}",
+            )
     else:
         raise HTTPException(status_code=400, detail="Nieobsługiwana platforma.")
 
