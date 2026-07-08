@@ -1,9 +1,11 @@
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from typing import Awaitable, Callable
 
 from src.schemas.chat import ChatMessage
 
+logger = logging.getLogger(__name__)
 
 Subscriber = Callable[[ChatMessage], Awaitable[None]]
 
@@ -26,8 +28,11 @@ class AbstractClient(ABC):
         for subscriber_call in list(self._subscribers):
             try:
                 await subscriber_call(chat_msg)
-            except Exception as e:
-                print(f"Błąd podczas wywoływania subskrybenta: {e}")
+            except Exception:
+                logger.warning(
+                    "Nie udało się dostarczyć wiadomości subskrybentowi, odpinam go.",
+                    exc_info=True,
+                )
                 self._subscribers.discard(subscriber_call)
 
     def _spawn(self, coro) -> None:

@@ -44,6 +44,7 @@ class KickClient(AbstractClient):
                             }
                         )
                     )
+                    logger.info("Połączono z czatem Kick: chatroom %s", channel)
 
                     async for raw in ws:
                         if not self.running:

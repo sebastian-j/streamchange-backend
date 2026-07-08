@@ -1,7 +1,14 @@
+import logging
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 from src.schemas.chat import ChatMessage
 from src.hub import Hub
+
+logging.basicConfig(
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 hub = Hub()
@@ -35,18 +42,19 @@ async def chat_endpoint(websocket: WebSocket):
             await websocket.send_json(chat_msg.model_dump())
 
         key = await hub.subscribe(channel, platform, send)
+        logger.info("Klient podłączony do %s/%s", platform, channel)
 
         while True:
             await websocket.receive_text()
 
     except WebSocketDisconnect:
-        print("Klient rozłączony.")
-    except Exception as e:
-        print(f"Błąd: {e}")
+        logger.info("Klient rozłączony.")
+    except Exception:
+        logger.exception("Błąd w obsłudze połączenia WebSocket.")
     finally:
         if key is not None and send is not None:
             await hub.unsubscribe(key, send)
-        print("Połączenie zamknięte.")
+        logger.info("Połączenie zamknięte.")
 
 
 if __name__ == "__main__":
