@@ -1,5 +1,4 @@
 import asyncio
-from typing import Callable
 
 from src.clients.abstract_client import AbstractClient
 from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
@@ -7,11 +6,11 @@ from src.schemas.chat import ChatMessage
 
 
 class TwitchClient(AbstractClient):
-    def __init__(self, on_message: Callable) -> None:
+    def __init__(self) -> None:
+        super().__init__()
         self.reader = None
         self.writer = None
         self.current_channel = None
-        super().__init__(on_message)
 
     async def connect(self, channel: str) -> None:
         self.current_channel = channel.lower().strip()
@@ -98,7 +97,7 @@ class TwitchClient(AbstractClient):
                         is_streamer=is_streamer,
                     )
 
-                    await self.on_message(chat_msg)
+                    await self._broadcast(chat_msg)
 
         except asyncio.CancelledError:
             print("Pętla zatrzymana.")

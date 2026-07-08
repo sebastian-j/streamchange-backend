@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-from typing import Callable
 
 import websockets
 from websockets.exceptions import ConnectionClosed
@@ -16,8 +15,8 @@ MAX_RETRY_DELAY = 30
 
 
 class KickClient(AbstractClient):
-    def __init__(self, on_message: Callable) -> None:
-        super().__init__(on_message)
+    def __init__(self) -> None:
+        super().__init__()
         self.ws = None
         self.running = False
 
@@ -115,6 +114,6 @@ class KickClient(AbstractClient):
         )
 
         try:
-            await self.on_message(chat_msg)
+            await self._broadcast(chat_msg)
         except Exception:
             logger.exception("Błąd podczas przetwarzania wiadomości od %s", username)

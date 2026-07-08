@@ -1,13 +1,34 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Awaitable, Callable
+
 from src.schemas.chat import ChatMessage
 
 
+Subscriber = Callable[[ChatMessage], Awaitable[None]]
+
+
 class AbstractClient(ABC):
-    def __init__(self, on_message: Callable[[ChatMessage], None]) -> None:
-        self.on_message = on_message
+    def __init__(self) -> None:
+        self._subscribers: set[Subscriber] = set()
         self._task: asyncio.Task | None = None
+
+    def add_subscriber(self, callback: Subscriber) -> None:
+        self._subscribers.add(callback)
+
+    def remove_subscriber(self, callback: Subscriber) -> None:
+        self._subscribers.discard(callback)
+
+    def has_subscribers(self) -> bool:
+        return bool(self._subscribers)
+
+    async def _broadcast(self, chat_msg: ChatMessage) -> None:
+        for subscriber_call in list(self._subscribers):
+            try:
+                await subscriber_call(chat_msg)
+            except Exception as e:
+                print(f"Błąd podczas wywoływania subskrybenta: {e}")
+                self._subscribers.discard(subscriber_call)
 
     def _spawn(self, coro) -> None:
         self._task = asyncio.create_task(coro)
