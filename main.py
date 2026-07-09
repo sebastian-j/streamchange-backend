@@ -1,14 +1,19 @@
-import asyncio
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
-from src.clients.twitch_client import TwitchClient
-from src.clients.kick_client import KickClient
-from src.resolvers.kick_resolver import get_chatroom_id
-from src.schemas.chat import ChatMessage, StreamData
-from src.clients.twitch_api import TwitchAPIService
-from src.clients.kick_api import KickAPIService
 
+from src.clients.kick_api import KickAPIService
+from src.clients.twitch_api import TwitchAPIService
+from src.hub import Hub
+from src.schemas.chat import ChatMessage, StreamData
+
+logging.basicConfig(
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
+
+hub = Hub()
 twitch_api = TwitchAPIService()
 kick_api = KickAPIService()
 
@@ -62,7 +67,8 @@ async def get_stream_info(
 async def chat_endpoint(websocket: WebSocket):
     await websocket.accept()
 
-    client = None
+    key = None
+    send = None
 
     try:
         config = await websocket.receive_json()
@@ -79,26 +85,20 @@ async def chat_endpoint(websocket: WebSocket):
         async def send(chat_msg: ChatMessage):
             await websocket.send_json(chat_msg.model_dump())
 
-        if platform == "twitch":
-            client = TwitchClient(on_message=send)
-            await client.connect(channel)
-        elif platform == "kick":
-            client = KickClient(on_message=send)
-            chatroom_id = await asyncio.to_thread(get_chatroom_id, channel)
-            await client.connect(chatroom_id)
+        key = await hub.subscribe(channel, platform, send)
+        logger.info("Klient podłączony do %s/%s", platform, channel)
 
         while True:
             await websocket.receive_text()
 
     except WebSocketDisconnect:
-        print("Klient rozłączony.")
-    except Exception as e:
-        print(f"Błąd: {e}")
+        logger.info("Klient rozłączony.")
+    except Exception:
+        logger.exception("Błąd w obsłudze połączenia WebSocket.")
     finally:
-        if client:
-            print("Rozłączam klienta...")
-            await client.disconnect()
-        print("Połączenie zamknięte.")
+        if key is not None and send is not None:
+            await hub.unsubscribe(key, send)
+        logger.info("Połączenie zamknięte.")
 
 
 if __name__ == "__main__":

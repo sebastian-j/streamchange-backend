@@ -1,10 +1,11 @@
 import asyncio
-from typing import Callable
+import logging
 
 from src.clients.abstract_client import AbstractClient
 from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
 from src.schemas.chat import ChatMessage
 
+logger = logging.getLogger(__name__)
 TWITCH_BADGE_MAP = {
     "broadcaster": "broadcaster",
     "moderator": "moderator",
@@ -16,11 +17,11 @@ TWITCH_BADGE_MAP = {
 
 
 class TwitchClient(AbstractClient):
-    def __init__(self, on_message: Callable) -> None:
+    def __init__(self) -> None:
+        super().__init__()
         self.reader = None
         self.writer = None
         self.current_channel = None
-        super().__init__(on_message)
 
     async def connect(self, channel: str) -> None:
         self.current_channel = channel.lower().strip()
@@ -38,6 +39,7 @@ class TwitchClient(AbstractClient):
         )
         self.writer.write(f"JOIN #{self.current_channel}\r\n".encode("utf-8"))
         await self.writer.drain()
+        logger.info("Połączono z czatem Twitch: #%s", self.current_channel)
         self._spawn(self._listen_loop())
 
     async def disconnect(self) -> None:
@@ -50,7 +52,9 @@ class TwitchClient(AbstractClient):
                 self.writer.close()
                 await self.writer.wait_closed()
             except Exception:
-                print("Błąd podczas zamykania połączenia.")
+                logger.warning(
+                    "Błąd podczas zamykania połączenia Twitch.", exc_info=True
+                )
 
         self.reader = None
         self.writer = None
@@ -111,9 +115,9 @@ class TwitchClient(AbstractClient):
                         subscriber=sub_months,
                     )
 
-                    await self.on_message(chat_msg)
+                    await self._broadcast(chat_msg)
 
         except asyncio.CancelledError:
-            print("Pętla zatrzymana.")
+            logger.info("Pętla nasłuchu Twitch zatrzymana: #%s", self.current_channel)
         finally:
             await self._close_connection()
