@@ -54,12 +54,26 @@ class Hub:
         return key
 
     async def unsubscribe(self, key: ChannelKey, callback: Subscriber) -> None:
-        async with self._get_lock(key):
+        lock = self._locks.get(key)
+        if lock is None:
+            return
+
+        async with lock:
             client = self._clients.get(key)
             if client is None:
                 return
+            
             client.remove_subscriber(callback)
+            
             if not client.has_subscribers():
                 await client.disconnect()
-                del self._clients[key]
-                logger.info("Zamknięto połączenie dla %s", key)
+                
+                if key in self._clients:
+                    del self._clients[key]
+
+                if not lock._waiters:
+                    if key in self._locks:
+                        del self._locks[key]
+                    logger.info("Zamknięto połączenie i wyczyszczono lock dla %s", key)
+                else:
+                    logger.info("Zamknięto połączenie dla %s, ale zachowano lock", key)
