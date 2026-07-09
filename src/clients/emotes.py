@@ -11,6 +11,7 @@ def _text_fragment(text: str) -> MessageFragment | None:
         return None
     return MessageFragment(type="text", text=text)
 
+
 # emoteID:start-end,start-end/emoteID2:start-end
 def parse_twitch_emotes(
     content: str, emotes_tag: str | None
@@ -64,6 +65,7 @@ def parse_twitch_emotes(
         fragments.append(tail)
 
     return fragments or None
+
 
 # [emote:157733:catJAM]
 def parse_kick_emotes(content: str) -> list[MessageFragment] | None:
