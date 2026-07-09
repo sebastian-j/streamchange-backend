@@ -106,7 +106,7 @@ class TwitchClient(AbstractClient):
                     chat_msg = ChatMessage(
                         author=author,
                         message=content,
-                        color=tags.get("color") or "#A9A9A9",
+                        color=tags.get("color"),
                         badges=badges or None,
                         subscriber=sub_months,
                     )
