@@ -13,6 +13,17 @@ logger = logging.getLogger(__name__)
 
 MAX_RETRY_DELAY = 30
 
+KICK_BADGE_MAP = {
+    "broadcaster": "broadcaster",
+    "moderator": "moderator",
+    "vip": "vip",
+    "subscriber": "subscriber",
+    "founder": "founder",
+    "verified": "certified",
+    "og": "og",
+    "bot": "bot",
+}
+
 
 class KickClient(AbstractClient):
     def __init__(self) -> None:
@@ -95,23 +106,23 @@ class KickClient(AbstractClient):
             return
 
         identity = sender.get("identity") or {}
-        badges = identity.get("badges") or []
-        badge_types = {badge.get("type") for badge in badges}
 
         subscriber = 0
-        for badge in badges:
-            if badge.get("type") == "subscriber":
+        badges = []
+        for badge in identity.get("badges") or []:
+            badge_type = badge.get("type")
+            if badge_type == "subscriber":
                 subscriber = badge.get("count", 0)
-                break
+            mapped = KICK_BADGE_MAP.get(badge_type)
+            if mapped and mapped not in badges:
+                badges.append(mapped)
 
         chat_msg = ChatMessage(
             author=username,
             message=content,
-            color=identity.get("color") or "#A9A9A9",
-            is_vip="vip" in badge_types,
-            is_moderator="moderator" in badge_types,
+            color=identity.get("color") or "#000000",
+            badges=badges or None,
             subscriber=subscriber,
-            is_streamer="broadcaster" in badge_types,
         )
 
         try:

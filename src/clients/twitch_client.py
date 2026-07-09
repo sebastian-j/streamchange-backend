@@ -6,6 +6,14 @@ from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
 from src.schemas.chat import ChatMessage
 
 logger = logging.getLogger(__name__)
+TWITCH_BADGE_MAP = {
+    "broadcaster": "broadcaster",
+    "moderator": "moderator",
+    "vip": "vip",
+    "subscriber": "subscriber",
+    "founder": "founder",
+    "partner": "certified",
+}
 
 
 class TwitchClient(AbstractClient):
@@ -79,8 +87,6 @@ class TwitchClient(AbstractClient):
                     message_part = parts[2].split(":", 1)
                     content = message_part[1] if len(message_part) > 1 else ""
 
-                    is_streamer = author.lower() == self.current_channel.lower()
-
                     sub_months = 0
                     if tags.get("subscriber") == "1":
                         sub_months = 1
@@ -93,14 +99,20 @@ class TwitchClient(AbstractClient):
                                     except (IndexError, ValueError):
                                         pass
 
+                    badges = []
+                    badges_tag = tags.get("badges") or ""
+                    for badge in badges_tag.split(","):
+                        key = badge.split("/")[0]
+                        mapped = TWITCH_BADGE_MAP.get(key)
+                        if mapped and mapped not in badges:
+                            badges.append(mapped)
+
                     chat_msg = ChatMessage(
                         author=author,
                         message=content,
-                        color=tags.get("color") or "#A9A9A9",
-                        is_vip=tags.get("vip") == "1",
-                        is_moderator=tags.get("mod") == "1",
+                        color=tags.get("color") or "#000000",
+                        badges=badges or None,
                         subscriber=sub_months,
-                        is_streamer=is_streamer,
                     )
 
                     await self._broadcast(chat_msg)
