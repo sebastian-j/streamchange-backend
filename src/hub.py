@@ -62,12 +62,12 @@ class Hub:
             client = self._clients.get(key)
             if client is None:
                 return
-            
+
             client.remove_subscriber(callback)
-            
+
             if not client.has_subscribers():
                 await client.disconnect()
-                
+
                 if key in self._clients:
                     del self._clients[key]
 
