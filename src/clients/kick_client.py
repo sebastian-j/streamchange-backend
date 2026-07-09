@@ -120,7 +120,7 @@ class KickClient(AbstractClient):
         chat_msg = ChatMessage(
             author=username,
             message=content,
-            color=identity.get("color"),
+            color=identity.get("color") or "#000000",
             badges=badges or None,
             subscriber=subscriber,
         )
