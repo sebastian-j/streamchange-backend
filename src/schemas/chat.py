@@ -6,10 +6,8 @@ class ChatMessage(BaseModel):
     author: str
     message: str
     color: str
-    is_vip: bool
-    is_moderator: bool
+    badges: Optional[list[str]] = None
     subscriber: int
-    is_streamer: bool
 
 
 class StreamData(BaseModel):
