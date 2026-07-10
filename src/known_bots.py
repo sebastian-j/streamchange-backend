@@ -6,7 +6,7 @@ KNOWN_BOTS: set[str] = set(
         "fossabot",
         "botrix",
         "kickbot",
-        "@streamelements"
+        "@streamelements",
     }
 )
 
