@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from src.clients.abstract_client import AbstractClient
+from src.clients.emotes import parse_twitch_emotes
 from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
 from src.known_bots import is_known_bot
 from src.schemas.chat import ChatMessage
@@ -110,6 +111,7 @@ class TwitchClient(AbstractClient):
 
                     if "bot" not in badges and is_known_bot(author):
                         badges.append("bot")
+                    fragments = parse_twitch_emotes(content, tags.get("emotes"))
 
                     chat_msg = ChatMessage(
                         author=author,
@@ -117,6 +119,7 @@ class TwitchClient(AbstractClient):
                         color=tags.get("color") or "#000000",
                         badges=badges or None,
                         subscriber=sub_months,
+                        fragments=fragments,
                     )
 
                     await self._broadcast(chat_msg)
