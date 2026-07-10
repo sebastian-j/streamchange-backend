@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from src.clients.abstract_client import AbstractClient
+from src.clients.emotes import parse_twitch_emotes
 from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
 from src.schemas.chat import ChatMessage
 
@@ -107,12 +108,15 @@ class TwitchClient(AbstractClient):
                         if mapped and mapped not in badges:
                             badges.append(mapped)
 
+                    fragments = parse_twitch_emotes(content, tags.get("emotes"))
+
                     chat_msg = ChatMessage(
                         author=author,
                         message=content,
                         color=tags.get("color") or "#000000",
                         badges=badges or None,
                         subscriber=sub_months,
+                        fragments=fragments,
                     )
 
                     await self._broadcast(chat_msg)
