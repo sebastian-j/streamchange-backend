@@ -123,7 +123,10 @@ class KickClient(AbstractClient):
             badges.append("bot")
         fragments = parse_kick_emotes(content)
 
+        sender_id = sender.get("id")
+
         chat_msg = ChatMessage(
+            user_id=str(sender_id) if sender_id is not None else None,
             author=username,
             message=strip_kick_emote_tokens(content),
             color=identity.get("color") or "#000000",

@@ -10,6 +10,7 @@ class MessageFragment(BaseModel):
 
 
 class ChatMessage(BaseModel):
+    user_id: Optional[str] = None
     author: str
     message: str
     color: str
