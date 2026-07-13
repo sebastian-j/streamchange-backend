@@ -12,4 +12,4 @@ KNOWN_BOTS: set[str] = set(
 
 
 def is_known_bot(username: str) -> bool:
-    return username.lower() in KNOWN_BOTS
+    return username.casefold() in KNOWN_BOTS
