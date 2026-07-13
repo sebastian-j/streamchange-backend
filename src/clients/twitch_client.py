@@ -114,6 +114,7 @@ class TwitchClient(AbstractClient):
                     fragments = parse_twitch_emotes(content, tags.get("emotes"))
 
                     chat_msg = ChatMessage(
+                        user_id=tags.get("user-id"),
                         author=author,
                         message=content,
                         color=tags.get("color") or "#000000",

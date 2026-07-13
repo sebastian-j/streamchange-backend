@@ -8,6 +8,7 @@ from src.config import (
     TOKEN_URL,
     TWITCH_CLIENT_ID,
     TWITCH_CLIENT_SECRET,
+    TWITCH_USERS_URL,
 )
 from src.schemas.chat import StreamData
 
@@ -94,3 +95,33 @@ class TwitchAPIService:
             game_name=stream.get("game_name"),
             started_at=stream.get("started_at"),
         )
+
+    async def get_avatar(self, user_id: str) -> str | None:
+        try:
+            return await self._request_avatar(user_id)
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 401:
+                logger.warning("Token Twitcha odrzucony, odświeżam.")
+                self._invalidate_token()
+                return await self._request_avatar(user_id)
+            logger.error("Twitch API zwróciło błąd: %s", e)
+            raise
+        except httpx.RequestError as e:
+            logger.error("Błąd sieci przy odpytywaniu Twitch API: %s", e)
+            raise
+
+    async def _request_avatar(self, user_id: str) -> str | None:
+        token = await self._get_app_access_token()
+        headers = {"Client-ID": self.client_id, "Authorization": f"Bearer {token}"}
+        params = {"id": user_id}
+
+        response = await self._client.get(
+            TWITCH_USERS_URL, headers=headers, params=params
+        )
+        response.raise_for_status()
+        users = response.json().get("data", [])
+
+        if not users:
+            return None
+
+        return users[0].get("profile_image_url")

@@ -124,6 +124,7 @@ class KickClient(AbstractClient):
         fragments = parse_kick_emotes(content)
 
         chat_msg = ChatMessage(
+            user_id=str(sender.get("id")),
             author=username,
             message=strip_kick_emote_tokens(content),
             color=identity.get("color") or "#000000",

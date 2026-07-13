@@ -63,6 +63,36 @@ async def get_stream_info(
         raise HTTPException(status_code=400, detail="Nieobsługiwana platforma.")
 
 
+@app.get("/api/avatar")
+async def get_avatar(
+    user_id: str = Query(..., description="ID użytkownika"),
+    platform: str = Query(..., description="Platforma"),
+):
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Brak ID użytkownika.")
+
+    platform = platform.lower().strip()
+
+    if platform == "twitch":
+        try:
+            return {"url": await twitch_api.get_avatar(user_id)}
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Nie udało się pobrać avatara z API Twitcha: {e}",
+            )
+    elif platform == "kick":
+        try:
+            return {"url": await kick_api.get_avatar(user_id)}
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Nie udało się pobrać avatara z API Kicka: {e}",
+            )
+    else:
+        raise HTTPException(status_code=400, detail="Nieobsługiwana platforma.")
+
+
 @app.websocket("/ws/chat")
 async def chat_endpoint(websocket: WebSocket):
     await websocket.accept()
