@@ -8,6 +8,7 @@ from websockets.exceptions import ConnectionClosed
 from src.clients.abstract_client import AbstractClient
 from src.clients.emotes import parse_kick_emotes, strip_kick_emote_tokens
 from src.config import KICK_PUSHER_WS
+from src.known_bots import is_known_bot
 from src.schemas.chat import ChatMessage
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,8 @@ class KickClient(AbstractClient):
             if mapped and mapped not in badges:
                 badges.append(mapped)
 
+        if "bot" not in badges and is_known_bot(username):
+            badges.append("bot")
         fragments = parse_kick_emotes(content)
 
         chat_msg = ChatMessage(

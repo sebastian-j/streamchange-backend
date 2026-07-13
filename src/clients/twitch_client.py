@@ -4,6 +4,7 @@ import logging
 from src.clients.abstract_client import AbstractClient
 from src.clients.emotes import parse_twitch_emotes
 from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
+from src.known_bots import is_known_bot
 from src.schemas.chat import ChatMessage
 
 logger = logging.getLogger(__name__)
@@ -108,6 +109,8 @@ class TwitchClient(AbstractClient):
                         if mapped and mapped not in badges:
                             badges.append(mapped)
 
+                    if "bot" not in badges and is_known_bot(author):
+                        badges.append("bot")
                     fragments = parse_twitch_emotes(content, tags.get("emotes"))
 
                     chat_msg = ChatMessage(
