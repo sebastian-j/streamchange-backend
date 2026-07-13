@@ -44,7 +44,7 @@ class TwitchAPIService:
         }
 
         try:
-            response = await self._client.post(TOKEN_URL, params=params)
+            response = await self._client.post(TOKEN_URL, data=params)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             logger.error("Twitch odrzucił żądanie o token: %s", e)

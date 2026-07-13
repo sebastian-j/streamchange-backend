@@ -76,19 +76,15 @@ async def get_avatar(
     if platform == "twitch":
         try:
             return {"url": await twitch_api.get_avatar(user_id)}
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Nie udało się pobrać avatara z API Twitcha: {e}",
-            )
+        except Exception:
+            logger.exception("Nie udało się pobrać avatara z API Twitcha.")
+            raise HTTPException(status_code=500, detail="Nie udało się pobrać avatara.")
     elif platform == "kick":
         try:
             return {"url": await kick_api.get_avatar(user_id)}
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Nie udało się pobrać avatara z API Kicka: {e}",
-            )
+        except Exception:
+            logger.exception("Nie udało się pobrać avatara z API Kicka.")
+            raise HTTPException(status_code=500, detail="Nie udało się pobrać avatara.")
     else:
         raise HTTPException(status_code=400, detail="Nieobsługiwana platforma.")
 
