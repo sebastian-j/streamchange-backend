@@ -1,4 +1,4 @@
-KNOWN_BOTS: frozenset[str] = frozenset({
+KNOWN_BOTS: frozenset[str] = frozenset(
     {
         "nightbot",
         "streamelements",
