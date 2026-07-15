@@ -2,7 +2,9 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 
+from src.blacklist import check_blacklist, load_blacklist
 from src.clients.kick_api import KickAPIService
 from src.clients.twitch_api import TwitchAPIService
 from src.hub import Hub
@@ -20,6 +22,7 @@ kick_api = KickAPIService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    load_blacklist()
     yield
     await twitch_api.aclose()
     await kick_api.aclose()
@@ -27,10 +30,33 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/api/check-blacklist")
+async def check_blacklist_endpoint(
+    channel: str = Query(..., description="Nazwa kanału"),
+    platform: str = Query(..., description="Platforma"),
+):
+    entry = check_blacklist(channel, platform)
+    if entry:
+        return {
+            "blacklisted": True,
+            "reason": entry.get("reason", "Kanał nieobsługiwany."),
+            "category": entry.get("category", "Nieznana"),
+        }
+    return {"blacklisted": False}
 
 
 @app.get("/api/stream-info", response_model=StreamData)
@@ -106,6 +132,13 @@ async def chat_endpoint(websocket: WebSocket):
             return
         elif platform != "twitch" and platform != "kick":
             await websocket.close(code=4001, reason="Nieobsługiwana platforma.")
+            return
+
+        blacklist_entry = check_blacklist(channel, platform)
+        if blacklist_entry:
+            reason = blacklist_entry.get("reason", "Kanał nieobsługiwany.")
+            await websocket.close(code=4003, reason=reason)
+            logger.info("Zablokowane połączenie do %s/%s - %s", platform, channel, reason)
             return
 
         async def send(chat_msg: ChatMessage):

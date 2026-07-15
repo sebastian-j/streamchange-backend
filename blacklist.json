@@ -1,0 +1,22 @@
+{
+  "channels": [
+    {
+      "name": "esl_csgo",
+      "platform": "twitch",
+      "category": "ESL",
+      "reason": "Profesjonalna liga esportowa - kanał nieobsługiwany."
+    },
+    {
+      "name": "esl_cs2",
+      "platform": "twitch",
+      "category": "ESL",
+      "reason": "Profesjonalna liga esportowa - kanał nieobsługiwany."
+    },
+    {
+      "name": "esl_dota2",
+      "platform": "twitch",
+      "category": "ESL",
+      "reason": "Profesjonalna liga esportowa - kanał nieobsługiwany."
+    }
+  ]
+}
