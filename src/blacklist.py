@@ -31,8 +31,8 @@ def check_blacklist(channel: str, platform: str) -> Optional[dict]:
 
     for entry in _blacklist:
         if (
-            entry["name"].lower() == channel_lower
-            and entry["platform"].lower() == platform_lower
+            entry.get("name", "").lower() == channel_lower
+            and entry.get("platform", "").lower() == platform_lower
         ):
             return entry
 
