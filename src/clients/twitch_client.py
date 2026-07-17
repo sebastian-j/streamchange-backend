@@ -3,6 +3,7 @@ import logging
 
 from src.clients.abstract_client import AbstractClient
 from src.clients.emotes import parse_twitch_emotes
+from src.color_generator import get_fallback_color
 from src.config import TWITCH_IRC_HOST, TWITCH_IRC_PORT, TWITCH_NICK
 from src.known_bots import is_known_bot
 from src.schemas.chat import ChatMessage
@@ -117,7 +118,7 @@ class TwitchClient(AbstractClient):
                         user_id=tags.get("user-id"),
                         author=author,
                         message=content,
-                        color=tags.get("color") or "#000000",
+                        color=tags.get("color") or get_fallback_color(author),
                         badges=badges or None,
                         subscriber=sub_months,
                         fragments=fragments,
