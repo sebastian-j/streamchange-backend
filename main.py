@@ -54,7 +54,6 @@ async def check_blacklist_endpoint(
         return {
             "blacklisted": True,
             "reason": entry.get("reason", "Kanał nieobsługiwany."),
-            "category": entry.get("category", "Nieznana"),
         }
     return {"blacklisted": False}
 
@@ -138,7 +137,9 @@ async def chat_endpoint(websocket: WebSocket):
         if blacklist_entry:
             reason = blacklist_entry.get("reason", "Kanał nieobsługiwany.")
             await websocket.close(code=4003, reason=reason)
-            logger.info("Zablokowane połączenie do %s/%s - %s", platform, channel, reason)
+            logger.info(
+                "Zablokowane połączenie do %s/%s - %s", platform, channel, reason
+            )
             return
 
         async def send(chat_msg: ChatMessage):
