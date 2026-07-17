@@ -7,6 +7,7 @@ from websockets.exceptions import ConnectionClosed
 
 from src.clients.abstract_client import AbstractClient
 from src.clients.emotes import parse_kick_emotes, strip_kick_emote_tokens
+from src.color_generator import get_fallback_color
 from src.config import KICK_PUSHER_WS
 from src.known_bots import is_known_bot
 from src.schemas.chat import ChatMessage
@@ -129,7 +130,7 @@ class KickClient(AbstractClient):
             user_id=str(sender_id) if sender_id is not None else None,
             author=username,
             message=strip_kick_emote_tokens(content),
-            color=identity.get("color") or "#000000",
+            color=identity.get("color") or get_fallback_color(username),
             badges=badges or None,
             subscriber=subscriber,
             fragments=fragments,
