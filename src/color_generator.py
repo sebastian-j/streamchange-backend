@@ -13,13 +13,14 @@ DEFAULT_CHAT_COLORS = [
     "#1E90FF",
     "#FF69B4",
     "#8A2BE2",
-    "#00FF7F"
+    "#00FF7F",
 ]
+
 
 def get_fallback_color(username: str) -> str:
     if not username:
         return "#FFFFFF"
-        
+
     char_sum = sum(ord(char) for char in username)
-    
+
     return DEFAULT_CHAT_COLORS[char_sum % len(DEFAULT_CHAT_COLORS)]
