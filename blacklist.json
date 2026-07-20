@@ -1,0 +1,14 @@
+{
+  "channels": [
+    {
+      "name": "eslcs",
+      "platform": "twitch",
+      "reason": "E-sport channel."
+    },
+    {
+      "name": "ewc_stcarena_en",
+      "platform": "twitch",
+      "reason": "E-sport channel."
+    }
+  ]
+}
