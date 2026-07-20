@@ -1,7 +1,6 @@
 import logging
 import os
 from contextlib import asynccontextmanager
-import os
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
